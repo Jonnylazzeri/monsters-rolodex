@@ -1,0 +1,196 @@
+class App extends Component {
+
+  constructor(){
+    super();
+  }
+
+  super calls the constructor method on the Component class, which gives us access to this.state
+
+  you have access to functions such as onClick (for buttons and such), that will change the html they are clicked:
+  <button onClick = {() => this.setState({ string: 'Boobs'})} >Change Text</button>
+  
+  The function will be nested as an object, between two curly braces. And the setState will give the default (or given) state a new value.
+
+  You are not allowed to modify the state in react, unless you call the setState function. 
+
+  The reason we would want a unique key for each child element, is because react wants to know what element it needs to update if one of the elements has a changing value.
+  React knows that it only needs to update the relevant element, instead of rerendering the all of the elements.
+
+  this.state = {
+      monsters: [{
+        name: 'Frankenstein',
+        id: 'asc1'
+      },
+      {
+        name: 'Dracula',
+        id: 'asc2'
+      },
+      {
+        name: 'Zombie',
+        id: 'asc3'
+      }
+    ]
+      
+    }
+  }
+  
+  render(){
+    return (
+      <div className="App">
+        {
+          this.state.monsters.map( monster => 
+          <h1 key={monster.id}> {monster.name} </h1>)
+        }
+      </div>
+    );
+  }
+
+  A good rule of thumb as to when to use the key attribute is this: Anytime you use the map() function inside of render, or you have a list of the same jsx elements one after another, they need a key attribute (and CRA will warn you about it if you miss it)
+
+Component is part of the react library (its a property). When we use react extends Component, we're basically saying we want the functionality of the component property, and add on to it.
+
+super() calls React.Component's constructor.
+
+Life cycle methods are methods that get called at different stages of when the component gets rendered.
+
+componentDidMount: when the component mounts (as in when it puts what we rendered inside the DOM), it will call the code that's nested within the (componentDidMount) function.
+
+fetch always return a promise!
+
+componentDidMount() {
+    fetch('https://jsonplaceholder.typicode.com/users')
+  }
+
+  if we want to see what our initial response would look like:
+
+  componentDidMount() {
+    fetch('https://jsonplaceholder.typicode.com/users')
+    .then(response => console.log(response))
+  }
+
+We will get an object in return, so we would like to convert it to json in order for our js to understand the format of what it's getting.
+
+After it gets turned into json, it will get passeed as a new promise, which will be the array containing all the relevant objects (or the body).
+
+componentDidMount() {
+    fetch('https://jsonplaceholder.typicode.com/users')
+    .then(response => response.json())
+    .then(users => console.log(users))
+  }
+
+  to make our monster output dynamic with the api, we would need to turn the value of monsters to the value of users, and remove our hardcoded users from the app:
+
+constructor(){
+    super();
+
+    this.state = {
+      monsters: []
+      
+    }
+  }
+
+  componentDidMount() {
+    fetch('https://jsonplaceholder.typicode.com/users')
+    .then(response => response.json())
+    .then(users => this.setState({monsters: users}))
+  }
+  
+  components take in props. Props are going to be the parameter we get from our functional component.
+
+  When you enter a prop into the component you inserted into the app, it will become an object of any property you give it.
+
+  Children are whatever is passed in between the opening and closing tag of the component. 
+
+  State vs. Props:
+  Once we pass our state down to a component, the component receives it as a prop
+
+state usually lives in one location and trickles down the file as props.
+
+setState is an asynchronous function call. Which is why it won't immediately log the changes.
+You can pass multiple arguments to setState:
+  <input type="search" placeholder="Search Monsters" onChange ={e => this.setState({searchField: e.target.value}, () => console.log(this.state))}/> 
+This will also make it funciton in a synchronous way, meaning that we won't have to wait for something to happen in order for the state to be changed.
+If we wanted to see or do something with our state right after we set it, we would have to call a callback function and then do whatever it is that we wanted to do.
+
+ Destructuring: pull properties off of an object and set them to constants that we put into a pair of curly braces :
+
+  const { monsters, searchField } = this.state //we use this.state, since that is where we want to pull the properties off of.
+
+this will basically be the equivalent of writing:
+  
+  const monsters = this.state.monsters
+  const searchField = this.state.searchField
+
+We decide where to place the state based on what other components will be affected from the state change. The state cannot climb its way up, so we would need to put the state in a place where the only things that are affected by it are children, and not parents.
+
+In class-based react, the this keyword is always set to the class component, because of the super() method. Whenever we use the 'this' keyword, its an extension of the class, and appeals only to the class.
+Initial code :
+
+class App extends Component {
+
+  constructor(){
+    super();
+
+    this.state = {
+      monsters: [],
+      searchField: ''
+    }
+  }
+
+  componentDidMount() {
+    fetch('https://jsonplaceholder.typicode.com/users')
+    .then(response => response.json())
+    .then(users => this.setState({monsters: users}))
+  }
+  
+  render(){
+    const { monsters, searchField } = this.state
+    const filteredMonsters = monsters.filter(monster => 
+      monster.name.toLowerCase().includes(searchField.toLowerCase())
+      )
+    return (
+      <div className="App">
+        <SearchBox 
+          placeholder="Search Monsters"
+          handleChange = {e => this.setState({searchField: e.target.value})}
+        />
+        <CardList monsters = {filteredMonsters} />
+      </div>
+    );
+  }
+}
+
+handleChange(e) {
+    this.setState({searchField: e.target.value})
+  }
+  
+  render(){
+    const { monsters, searchField } = this.state
+    const filteredMonsters = monsters.filter(monster => 
+      monster.name.toLowerCase().includes(searchField.toLowerCase())
+      )
+    return (
+      <div className="App">
+        <SearchBox 
+          placeholder="Search Monsters"
+          handleChange = {this.handleChange}
+        />
+        <CardList monsters = {filteredMonsters} />
+      </div>
+    );
+  }
+
+this.handleChange = this.handleChange.bind(this)
+
+bind() is a method on any function that returns a new function where the context of 'this' is set to whatever we passed to it. Meaning the this keyword will now globally refer to the app class component's 'this'
+
+ In order for us to not need to bind everytime we want to define a new function, we can use arrow functions. Arrow functions automatically allow you to set 'this' to its initial context (meaning it will be directly linked with the main component, in this case, App).
+
+  handleChange = (e) =>
+    this.setState({searchField: e.target.value})
+  
+
+  click 1: will console button 1 clicked
+  Click 2: same
+  Click 3: same
+  Click 4: will console log button 3 clicked
